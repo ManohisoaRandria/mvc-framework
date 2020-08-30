@@ -1,10 +1,11 @@
-<%-- 
+<%--
     Document   : session
     Created on : 8 avr. 2020, 13:11:00
     Author     : P11A-MANOHISOA
 --%>
 
 <%@page import="utils.ModelView"%>
+<%@page import="utils.Session"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>
@@ -14,9 +15,7 @@
     </head>
     <body>
         <h1>session</h1>
-        <% ModelView data=(ModelView)request.getAttribute("data");%>
-        <% int data2=(int)data.get("sessA");%>
-        
-        hello: <%= data2%>
+
+        hello: <%= Session.vueGet("haha")%>
     </body>
 </html>

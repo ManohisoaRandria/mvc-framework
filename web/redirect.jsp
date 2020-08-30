@@ -1,11 +1,9 @@
-<%--
-    Document   : session
-    Created on : 8 avr. 2020, 13:11:00
-    Author     : P11A-MANOHISOA
+<%-- 
+    Document   : redirect
+    Created on : Aug 30, 2020, 10:16:17 PM
+    Author     : manohisoa
 --%>
 
-<%@page import="utils.ModelView"%>
-<%@page import="utils.Session"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>
@@ -14,8 +12,6 @@
         <title>JSP Page</title>
     </head>
     <body>
-        <h1>session</h1>
-
-        hello: <%= Session.vueGet("haha")%>
+        <h1>Hello World!</h1>
     </body>
 </html>

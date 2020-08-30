@@ -5,6 +5,7 @@
  */
 package servlet;
 
+import annotation.ModelParam;
 import annotation.Param;
 import annotation.Vue;
 import converter.MainConverter;
@@ -13,11 +14,13 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import utils.Session;
+import utils.Outils;
 
 /**
  *
@@ -26,8 +29,7 @@ import utils.Session;
 public class ServletG extends HttpServlet {
 
     /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
+     * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
      *
      * @param request servlet request
      * @param response servlet response
@@ -35,14 +37,19 @@ public class ServletG extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+            throws ServletException, IOException, Exception {
         String url = (String) request.getAttribute("url");
         String[] classMethode = url.split("-");
         String className = this.changeClassNameCase(classMethode[0]);
         String methodName = classMethode[1];
         try {
             Class<?> c = Class.forName("controller." + className);
+
             Object obj = c.newInstance();
+            //initialiser la session raha misy
+            //mamorona anle objet session
+            Outils.initSession(obj, request);
+
             Method[] methods = c.getDeclaredMethods(); //récupération de toutes le méthodes
             Method methode = null;
             //comparaison des méthode selon leur noms
@@ -64,89 +71,91 @@ public class ServletG extends HttpServlet {
                         //ary tsy miotran ray ny annotation amna paramatre ray
                         countAnnotaion(an, paramNeed);
                     } catch (Exception ex) {
-                        ex.printStackTrace();
+                        throw ex;
                     }
                     Object[] paramsValue = new Object[paramNeed.length];
 
-                    //récupération des paramètres de l'url et stockage dans un tableau
-                    Param[] queryparam = null;
-
-                    if (an.length != 0) {
-                        Param temp;
-                        queryparam = new Param[an.length];
-                        System.out.println("param number=" + an.length);
-                        int j = 0;
-                        for (Annotation[] annotArray : an) {
-                            //raha misy session
-                            if (annotArray.length == 0) {
-                                queryparam[j] = null;
+                    int i = 0;
+                    ModelParam modelAnnotTemp;
+                    Param paramAnnotTemp;
+                    for (Parameter parametre : paramNeed) {
+                        try {
+                            //raha ho mapperna anaty class fa tsy anaty variable tsotra
+                            if (an[i][0].annotationType().getName().equalsIgnoreCase("annotation.ModelParam")) {
+                                paramsValue[i] = MainConverter.convertObject(request, parametre);
                             } else {
-                                for (Annotation individualAnnot : annotArray) {
-                                    temp = (Param) individualAnnot;
-                                    queryparam[j] = temp;
-                                }
-                            }
-                            j++;
-                        }
-                    }
-                    if (queryparam != null) {
-                        int i = 0;
-                        for (Parameter parametre : paramNeed) {
-                            try {
-                                //raha tsis session
-                                if (queryparam[i] != null) {
-                                    if (request.getParameter(queryparam[i].name()) == null) {
-                                        throw new Exception("nom parametre '" + queryparam[i].name() + "' introuvable dans l'url");
+                                paramAnnotTemp = (Param) an[i][0];
+                                //raha string [] de checkbox zay
+                                if (parametre.getType().getName().equalsIgnoreCase("[Ljava.lang.String;")) {
+                                    if (request.getParameterValues(paramAnnotTemp.name()) == null) {
+                                        throw new Exception("nom parametre '" + paramAnnotTemp.name() + "' introuvable dans l'url");
                                     }
-                                    paramsValue[i] = MainConverter.convert(request.getParameter(queryparam[i].name()),
+                                    paramsValue[i] = request.getParameterValues(paramAnnotTemp.name());
+                                } else {
+                                    if (request.getParameter(paramAnnotTemp.name()) == null) {
+                                        throw new Exception("nom parametre '" + paramAnnotTemp.name() + "' introuvable dans l'url");
+                                    }
+                                    paramsValue[i] = MainConverter.convert(request.getParameter(paramAnnotTemp.name()),
                                             parametre.getType());
-                                } //raha misy session
-                                else {
-                                    //mamorona anle objet session
-                                    Session sess = (Session) parametre.getType().newInstance();
-                                    sess.setReq(request);
-                                    paramsValue[i] = sess;
                                 }
-                            } catch (Exception ex) {
-                                ex.printStackTrace();
                             }
-                            i++;
+
+                        } catch (Exception ex) {
+                            throw ex;
                         }
+                        i++;
                     }
+
                     String vue = "";
                     if (methode.getReturnType().getTypeName().equals("void")) {
                         methode.invoke(obj, paramsValue);
 
-                        if (methode.getAnnotation(Vue.class).vue() != null) {
+                        if (methode.getAnnotation(Vue.class) != null) {
                             vue = methode.getAnnotation(Vue.class).vue();
-                            request.getRequestDispatcher(vue).forward(request, response);
+                            if (!methode.getAnnotation(Vue.class).redirect()) {
+                                request.getRequestDispatcher(vue).forward(request, response);
+                            } else {
+                                response.sendRedirect(vue);
+                            }
                         }
                     } else {
                         Object data = methode.invoke(obj, paramsValue);
                         request.setAttribute("data", data);
 
-                        if (methode.getAnnotation(Vue.class).vue() != null) {
+                        if (methode.getAnnotation(Vue.class) != null) {
                             vue = methode.getAnnotation(Vue.class).vue();
-                            request.getRequestDispatcher(vue).forward(request, response);
+                            if (!methode.getAnnotation(Vue.class).redirect()) {
+                                request.getRequestDispatcher(vue).forward(request, response);
+                            } else {
+                                response.sendRedirect(vue);
+                            }
                         }
                     }
 
                 } else {
                     String vue = "";
                     if (methode.getReturnType().getTypeName().equals("void")) {
-                        methode.invoke(obj, (Object) null);
+                        methode.invoke(obj, new Object[0]);
 
-                        if (methode.getAnnotation(Vue.class).vue() != null) {
+                        if (methode.getAnnotation(Vue.class) != null) {
                             vue = methode.getAnnotation(Vue.class).vue();
-                            request.getRequestDispatcher(vue).forward(request, response);
+                            if (!methode.getAnnotation(Vue.class).redirect()) {
+                                request.getRequestDispatcher(vue).forward(request, response);
+                            } else {
+                                response.sendRedirect(vue);
+                            }
                         }
                     } else {
-                        Object data = methode.invoke(obj, (Object) null);
+                        Object data = methode.invoke(obj, new Object[0]);
                         request.setAttribute("data", data);
 
-                        if (methode.getAnnotation(Vue.class).vue() != null) {
+                        if (methode.getAnnotation(Vue.class) != null) {
                             vue = methode.getAnnotation(Vue.class).vue();
-                            request.getRequestDispatcher(vue).forward(request, response);
+                            if (!methode.getAnnotation(Vue.class).redirect()) {
+                                request.getRequestDispatcher(vue).forward(request, response);
+                            } else {
+                                response.sendRedirect(vue);
+                            }
                         }
                     }
                 }
@@ -155,14 +164,18 @@ public class ServletG extends HttpServlet {
 
         } catch (IOException | ClassNotFoundException | IllegalAccessException | IllegalArgumentException
                 | InstantiationException | SecurityException | InvocationTargetException | ServletException ex) {
-            ex.printStackTrace();
+            throw ex;
         }
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        try {
+            processRequest(request, response);
+        } catch (Exception ex) {
+            Logger.getLogger(ServletG.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
@@ -176,7 +189,11 @@ public class ServletG extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        try {
+            processRequest(request, response);
+        } catch (Exception ex) {
+            Logger.getLogger(ServletG.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     protected String changeClassNameCase(String className) {
@@ -188,25 +205,16 @@ public class ServletG extends HttpServlet {
 
     private int countAnnotaion(Annotation[][] an, Parameter[] paramneed) throws Exception {
         int count = 0;
-        int session = 0;
-        int i = 0;
         for (Annotation[] an1 : an) {
-            if (!paramneed[i].getType().getName().equals("utils.Session")) {
-                if (an1.length == 1) {
-                    count++;
-                } else if (an1.length == 0) {
-                    throw new Exception("mila misy annotaion 1 au moins ny parametre");
-                } else if (an1.length > 1) {
-                    throw new Exception("ray ihany ny annotation amna parametre");
-                }
-            } else {
-                session++;
+            if (an1.length == 1) {
+                count++;
+            } else if (an1.length == 0) {
+                throw new Exception("mila misy annotaion 1 au moins ny parametre");
+            } else if (an1.length > 1) {
+                throw new Exception("ray ihany ny annotation amna parametre");
             }
-            i++;
         }
-        if (session != 1) {
-            throw new Exception("ray ihany ny session amna parametre fonction ray");
-        }
+
         return count;
     }
 

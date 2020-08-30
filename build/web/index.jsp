@@ -12,12 +12,16 @@
         <title>JSP Page</title>
     </head>
     <body>
-        <form method="post" action="Empcontroller-lister.make">
+        <form method="post" action="Empcontroller-test.make">
             <input type="text" name="a" />
             <br/>
             <input type="text" name="b" />
             <br/>
-            <input type="text" name="dt" value="2020-12-1" />
+            <input type="checkbox" name="check" value="1" />
+            <br/>
+            <input type="checkbox" name="check" value="2" />
+            <br/>
+            <input type="checkbox" name="check" value="3" />
             <br/>
             <input type="submit" value="valider" />
         </form>
