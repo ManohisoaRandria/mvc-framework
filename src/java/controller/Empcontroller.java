@@ -5,6 +5,7 @@
  */
 package controller;
 
+import annotation.Authentification;
 import annotation.ModelParam;
 import annotation.Param;
 import annotation.Vue;
@@ -56,7 +57,11 @@ public class Empcontroller {
 //        map.add("sessA", haha);
 //        return map;
     }
-
+    @Authentification(adminrequired=true, redirection="test.jsp")
+    @Vue(vue = "session.jsp")
+    public void testAuth(){
+        
+    }
     public Session getSess() {
         return sess;
     }
@@ -64,4 +69,6 @@ public class Empcontroller {
     public void setSess(Session sess) {
         this.sess = sess;
     }
+    
+    
 }

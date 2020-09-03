@@ -2,6 +2,14 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group/>
+        <group>
+            <file>file:/F:/Bossy/S6/Distance/Naina/Servlet/genericservlet/src/java/converter/MainConverter.java</file>
+            <file>file:/F:/Bossy/S6/Distance/Naina/Servlet/genericservlet/src/java/servlet/ServletG.java</file>
+            <file>file:/F:/Bossy/S6/Distance/Naina/Servlet/genericservlet/src/java/utils/Session.java</file>
+            <file>file:/F:/Bossy/S6/Distance/Naina/Servlet/genericservlet/src/java/converter/NotParseableException.java</file>
+            <file>file:/F:/Bossy/S6/Distance/Naina/Servlet/genericservlet/src/java/filtre/Filtree.java</file>
+            <file>file:/F:/Bossy/S6/Distance/Naina/Servlet/genericservlet/src/java/utils/Outils.java</file>
+            <file>file:/F:/Bossy/S6/Distance/Naina/Servlet/genericservlet/src/java/controller/Empcontroller.java</file>
+        </group>
     </open-files>
 </project-private>

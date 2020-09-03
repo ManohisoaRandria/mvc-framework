@@ -5,6 +5,7 @@
  */
 package servlet;
 
+import annotation.Authentification;
 import annotation.ModelParam;
 import annotation.Param;
 import annotation.Vue;
@@ -54,14 +55,27 @@ public class ServletG extends HttpServlet {
             Method methode = null;
             //comparaison des méthode selon leur noms
             for (Method method : methods) {
-                if (method.getName().equals(methodName)) {
+                if (method.getName().equalsIgnoreCase(methodName)) {
                     methode = method;
                     break;
                 }
             }
             //récupération des arguments de la méthode si la methode n'est pas null
             if (methode != null) {
-
+                //vérification si l'authentification est requise
+                if(methode.getAnnotation(Authentification.class)!=null){
+                    //vérification si l'utilisateur est connecté
+                    if(request.getSession().getAttribute("connected")==null){
+                        response.sendRedirect(methode.getAnnotation(Authentification.class).redirection());
+                    }else{
+                        //vérification si l'utilisateur est un administrateur
+                       if(methode.getAnnotation(Authentification.class).adminrequired()==true){
+                            if(request.getSession().getAttribute("isAdmin")==null){
+                                response.sendRedirect(methode.getAnnotation(Authentification.class).redirection());
+                            }
+                        }  
+                    }
+                }
                 Parameter[] paramNeed = methode.getParameters();
                 Annotation[][] an = methode.getParameterAnnotations();
                 //raha misy parametre

@@ -10,5 +10,6 @@ package annotation;
  * @author Ihagatiana
  */
 public @interface Authentification {
+     boolean adminrequired();
      String redirection();
 }
