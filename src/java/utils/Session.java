@@ -27,7 +27,10 @@ public class Session {
 
     public Object get(String field) {
 //       data=(HashMap<String, Object>) s.getAttribute("data");
-        return data.get(field);
+        if (data.containsKey(field)) {
+            return data.get(field);
+        }
+        return null;
     }
 
     public static Object vueGet(String field) {

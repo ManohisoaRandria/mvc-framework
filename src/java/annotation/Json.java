@@ -5,10 +5,14 @@
  */
 package annotation;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /**
  *
  * @author manohisoa
  */
+@Retention(RetentionPolicy.RUNTIME)
 public @interface Json {
 
 }

@@ -87,7 +87,7 @@ public class MainConverter {
         return retour;
     }
 
-    public static Object convertObject(HttpServletRequest req, Parameter methodParam) throws Exception {
+    public static Object convertObject(HttpServletRequest req, Parameter methodParam, boolean ismultipart, List fileitems) throws Exception {
         Object retour = null;
         Class c = methodParam.getType();
         try {
@@ -97,9 +97,9 @@ public class MainConverter {
             for (Field f : fields) {
                 System.out.println("type=" + f.getType().getName());
                 if (f.getType().getName().equals("[Ljava.lang.String;")) {
-                    chechb = req.getParameterValues(f.getName());
+                    chechb = Outils.getParameterValues(fileitems, req, f.getName(), f.getType(), true, ismultipart);
                 } else {
-                    chechb = convert(req.getParameter(f.getName()), f.getType());
+                    chechb = Outils.getParameterValues(fileitems, req, f.getName(), f.getType(), false, ismultipart);
                 }
                 Method m = c.getMethod("set" + Outils.toUpperCase(f.getName()), f.getType());
                 m.invoke(retour, chechb);

@@ -18,4 +18,7 @@ public @interface Vue {
     String vue();
 
     boolean redirect() default false;
+
+    String errorPage() default "error/error.jsp";
+
 }

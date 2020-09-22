@@ -8,11 +8,14 @@ package controller;
 import annotation.Authentification;
 import annotation.ModelParam;
 import annotation.Param;
+import annotation.UploadParam;
 import annotation.Vue;
 import java.util.Arrays;
 import java.util.Date;
 import utils.ModelView;
+import utils.QueryParams;
 import utils.Session;
+import utils.UploadFile;
 
 /**
  *
@@ -21,6 +24,13 @@ import utils.Session;
 public class Empcontroller {
 
     private Session sess;
+    private QueryParams qp;
+
+    @Vue(vue = "redirect.jsp", redirect = true)
+    public void testQueryParam() {
+        qp.add("bla", "ble");
+        qp.add("cocom", "blodfd");
+    }
 
     //reha tsis anle redirect io de mampiasa anle requestdispatcher par defaut
     @Vue(vue = "redirect.jsp", redirect = true)
@@ -57,11 +67,24 @@ public class Empcontroller {
 //        map.add("sessA", haha);
 //        return map;
     }
-    @Authentification(adminrequired=true, redirection="test.jsp")
+
+    @Authentification(testAuth = {}, roles = {}, errorRedirection = "")
     @Vue(vue = "session.jsp")
-    public void testAuth(){
-        
+    public void testAuth() {
+
     }
+
+//    @Vue(vue = "json.jsp")
+//    @Json()
+    public void upload(@UploadParam() UploadFile file, @Param(name = "nomImage") String nom) throws Exception {
+        System.out.println("file path:" + file.getFilePath());
+        System.out.println("misy file:" + file.isFileAnyFilePresent());
+        System.out.println("chechk:" + nom);
+//        return new Personne("salut", 23, new String[]{"sdfs", "sdflskfhd"});
+//        String fileup = file.upload();
+//        System.out.println("final path" + fileup);
+    }
+
     public Session getSess() {
         return sess;
     }
@@ -69,6 +92,13 @@ public class Empcontroller {
     public void setSess(Session sess) {
         this.sess = sess;
     }
-    
-    
+
+    public QueryParams getQp() {
+        return qp;
+    }
+
+    public void setQp(QueryParams qp) {
+        this.qp = qp;
+    }
+
 }
